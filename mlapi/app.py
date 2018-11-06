@@ -10,6 +10,8 @@ from mlapi.model.facet import Facet
 from mlapi.question_generator import QuestionGenerator
 from mlapi.facet_sense_analyzer import FacetSenseAnalyzer
 from mlapi.facet_sense_api import FacetSenseApi
+from mlapi.facet_dictionary import FacetDictionary
+from mlapi.model.facet_values import FacetValues
 
 
 FACETS_FILE = Path(Definitions.ROOT_DIR + "/facets.bin")
@@ -17,7 +19,9 @@ FACETS_FILE = Path(Definitions.ROOT_DIR + "/facets.bin")
 app = Flask(__name__)
 app.json_encoder = ObjectEncoder
 loader = FacetLoader()
+facetDict = FacetDictionary()
 facets_by_document = loader.load_facets(FACETS_FILE)
+facets = facetDict.create_facet_dict(facets_by_document)
 
 facet_sense_api = FacetSenseApi()
 facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)
@@ -54,6 +58,17 @@ def filter_document_by_facets():
         documents = DocumentFilter.keep_documents_without_facets(documents, must_not_have_facets)
 
     return jsonify(list(documents.keys()))
+
+
+@app.route('/ML/Facets', methods=['POST'])
+def get_facet_values():
+    facets_name = request.get_json()
+    facet_values = list()
+
+    for name in facets_name:
+        facet_values.append(FacetValues(name, facets.get(name)))
+
+    return jsonify(facet_values)
 
 
 if __name__ == '__main__':

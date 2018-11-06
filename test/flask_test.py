@@ -19,6 +19,11 @@ class FlaskTest(unittest.TestCase):
         result = self.app.post('/ML/Filter/Facets', data=json.dumps(request), content_type='application/json')
         self.assertEqual(result.status_code, 200)
 
+    def test_facets_values_endpoint(self):
+        request = ['@y', '@m']
+        result = self.app.post('/ML/Facets', data=json.dumps(request), content_type='application/json')
+        self.assertEqual(result.status_code, 200)
+
 
 if __name__ == '__main__':
     unittest.main()
