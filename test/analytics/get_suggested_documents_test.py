@@ -7,9 +7,15 @@ from mlapi.analytics.get_suggested_documents import get_words_and_parts_of_speec
 
 class TestIdentifyWordsInSearches(unittest.TestCase):
     def test_get_max_score(self):
-        context_entities = {"throw", "banana"}
+        context_entities = ["throw", "banana"]
         parts_of_speech_scores = {
-            "VB": 2,
+            "NN": 2,
+        }
+        self.assertEqual(get_max_score(context_entities, parts_of_speech_scores), 4)
+
+    def test_get_max_score_count_duplicates_only_once(self):
+        context_entities = ["throw", "banana", "banana"]
+        parts_of_speech_scores = {
             "NN": 2,
         }
         self.assertEqual(get_max_score(context_entities, parts_of_speech_scores), 4)
