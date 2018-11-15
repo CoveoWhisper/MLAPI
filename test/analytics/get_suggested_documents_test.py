@@ -186,7 +186,6 @@ class TestIdentifyWordsInSearches(unittest.TestCase):
         )
 
     def test_get_suggested_documents(self):
-        suggested_documents_limit = 4
         searches_relative_scores ={
             "throw your banana": 1,
             "throw your apple": 1/2,
@@ -211,54 +210,20 @@ class TestIdentifyWordsInSearches(unittest.TestCase):
             "please no": ["h"],
             "again!?": ["z"]
         }
-        relative_scores_threshold = 1/3
-        expected_suggested_documents = ["f","a","b","d"]
+        expected_suggested_documents = {
+            'a': 0.36,
+            'b': 0.2,
+            'c': 0.008,
+            'd': 0.196,
+            'e': 0.05,
+            'f': 0.4,
+            'g': 1.0
+        }
         self.assertEqual(
             expected_suggested_documents,
             get_suggested_documents(
-                suggested_documents_limit,
                 searches_relative_scores,
                 documents_popularity_mapping,
-                searches_documents_mapping,
-                relative_scores_threshold
-            )
-        )
-
-    def test_get_suggested_documents_when_few_documents_are_over_threshold(self):
-        suggested_documents_limit = 4
-        searches_relative_scores = {
-            "throw your banana": 1,
-            "throw your apple": 3 / 4,
-            "throw your orange": 1 / 2,
-            "don't do that": 1 / 4
-        }
-        documents_popularity_mapping = {
-            "a": 90,
-            "b": 50,
-            "c": 2,
-            "d": 98,
-            "e": 25,
-            "f": 200,
-            "g": 1000,
-            "h": 800,
-            "i": 800
-        }
-        searches_documents_mapping = {
-            "throw your banana": ["a", "b"],
-            "throw your apple": ["d"],
-            "don't do that": ["g"],
-            "please no": ["h"],
-            "again!?": ["z"]
-        }
-        relative_scores_threshold = 3 / 4
-        expected_suggested_documents = ["a", "d", "b"]
-        self.assertEqual(
-            expected_suggested_documents,
-            get_suggested_documents(
-                suggested_documents_limit,
-                searches_relative_scores,
-                documents_popularity_mapping,
-                searches_documents_mapping,
-                relative_scores_threshold
+                searches_documents_mapping
             )
         )

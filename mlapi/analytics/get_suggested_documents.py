@@ -4,14 +4,13 @@ from flask import json
 
 from definitions import Definitions
 import nltk
-import operator
 
 nltk.download('averaged_perceptron_tagger')
 
 DOCUMENTS_POPULARITY_MAPPING_PATH = Path(Definitions.ROOT_DIR + "/documents_popularity.json")
 DOCUMENTS_SEARCHES_MAPPING_PATH = Path(Definitions.ROOT_DIR + "/documents_searches_mapping.json")
 
-RELATIVE_SCORES_THRESHOLD = 0.5
+RELATIVE_SCORES_PERFORMANCE_THRESHOLD = 0.5
 MAX_PART_OF_SPEECH_SCORE = 3
 PARTS_OF_SPEECH_SCORES = {
     "FW": MAX_PART_OF_SPEECH_SCORE,
@@ -66,7 +65,7 @@ def get_searches_containing_context_entities(
         searches_documents_mapping,
         context_entities,
         max_score,
-        relative_scores_threshold,
+        relative_scores_performance_threshold,
         max_part_of_speech_score):
     searches_containing_context_entities = {}
     for search in searches_documents_mapping:
@@ -74,25 +73,17 @@ def get_searches_containing_context_entities(
         for context_entity in context_entities:
             if context_entity in search.split():
                 context_entities_in_search.add(context_entity)
-        if len(context_entities_in_search) * max_part_of_speech_score >= max_score * relative_scores_threshold:
+        if len(context_entities_in_search) * max_part_of_speech_score >= max_score * relative_scores_performance_threshold:
             searches_containing_context_entities[search] = context_entities_in_search
     return searches_containing_context_entities
 
 
-def get_suggested_documents(
-        suggested_documents_limit,
-        searches_relative_scores,
-        documents_popularity_mapping,
-        searches_documents_mapping,
-        relative_scores_threshold):
-    searches_relative_scores_over_threshold = {
-        search: relative_score
-        for search, relative_score in searches_relative_scores.items()
-        if relative_score >= relative_scores_threshold
-    }
+def get_suggested_documents(searches_relative_scores, documents_popularity_mapping, searches_documents_mapping):
+    max_relative_score = max(searches_relative_scores.values())
+    max_relative_score = max(max_relative_score, 1)
     documents_relatives_scores = defaultdict(float)
     for search, documents in searches_documents_mapping.items():
-        if search not in searches_relative_scores_over_threshold:
+        if search not in searches_relative_scores:
             continue
         for document in documents:
             if document in documents_relatives_scores and documents_relatives_scores[document] < searches_relative_scores[search]:
@@ -104,11 +95,11 @@ def get_suggested_documents(
         for document, relative_score in documents_relatives_scores.items()
         if document in documents_popularity_mapping
     }
-    suggested_documents_scores = sorted(documents_scores.items(), key=operator.itemgetter(1), reverse=True)[:suggested_documents_limit]
-    return [suggested_document_score[0] for suggested_document_score in suggested_documents_scores]
+    max_score = max(documents_scores.values())
+    return {document: (score / max_score) * max_relative_score for document, score in documents_scores.items()}
 
 
-def get_suggested_documents_from_analytics(context_entities, suggested_documents_limit):
+def get_suggested_documents_from_analytics(context_entities):
     with open(DOCUMENTS_POPULARITY_MAPPING_PATH) as documents_popularity_mapping_file:
         documents_popularity_mapping = json.load(documents_popularity_mapping_file)
     with open(DOCUMENTS_SEARCHES_MAPPING_PATH) as documents_searches_mapping_file:
@@ -118,15 +109,13 @@ def get_suggested_documents_from_analytics(context_entities, suggested_documents
         searches_documents_mapping,
         context_entities,
         max_score,
-        RELATIVE_SCORES_THRESHOLD,
+        RELATIVE_SCORES_PERFORMANCE_THRESHOLD,
         MAX_PART_OF_SPEECH_SCORE
     )
     searches_scores = get_searches_scores(searches_containing_context_entities, PARTS_OF_SPEECH_SCORES)
     searches_relative_scores = get_searches_relative_scores(searches_scores, max_score)
     return get_suggested_documents(
-        suggested_documents_limit,
         searches_relative_scores,
         documents_popularity_mapping,
-        searches_documents_mapping,
-        RELATIVE_SCORES_THRESHOLD
+        searches_documents_mapping
     )

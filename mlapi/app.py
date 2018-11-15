@@ -48,8 +48,7 @@ def ml_analyze():
 def analytics_analysis():
     content = request.get_json()
     context_entities = content['ContextEntities']
-    suggested_documents_limit = content['SuggestedDocumentsLimit']
-    suggested_documents = get_suggested_documents_from_analytics(context_entities, suggested_documents_limit)
+    suggested_documents = get_suggested_documents_from_analytics(context_entities)
     return jsonify(suggested_documents)
 
 
