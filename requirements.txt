@@ -4,4 +4,3 @@ flask==0.12.4
 pytest
 pytest-flask
 tensorflow==1.5
-nltk
