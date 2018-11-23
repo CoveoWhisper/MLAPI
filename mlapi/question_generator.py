@@ -11,8 +11,8 @@ class QuestionGenerator(object):
 
         values_by_name = self.get_discriminating_facets(facets_by_document)
         questions = []
-        for key, values in values_by_name.items():
-            questions.append(Question(id=str(uuid.uuid4()), facet_name=key, facet_values=list(set(values)), answer="", status="None"))
+        for facet in values_by_name:
+            questions.append(Question(id=str(uuid.uuid4()), facet_name=facet[0], facet_values=list(set(facet[1])), answer="", status="None"))
         return questions
 
     def get_discriminating_facets(self, facets_by_document):

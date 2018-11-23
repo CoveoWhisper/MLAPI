@@ -18,7 +18,7 @@ class DiscriminatingFacetsAlgo(object):
             documents_by_discriminating_facets.clear()
             unique_documents_by_facet = self.get_unique_documents_by_facet(documents_by_facet)
             documents_by_discriminating_facets = self.execute_discriminating_facets_algorithm(unique_documents_by_facet)
-        return self.get_values_by_facet(documents_by_discriminating_facets)
+        return self.sort_discriminating_facets(documents_by_discriminating_facets)
 
     def get_unique_documents_by_facet(self, documents_by_facet):
         unique_documents_by_facet = {}
@@ -47,7 +47,7 @@ class DiscriminatingFacetsAlgo(object):
                     values_by_facet[facet[0]].append(facet[1])
         return values_by_facet
 
-    def get_facet_sample(self, unique_documents_by_facet):
+    def get_documents_count_by_facet_name(self, unique_documents_by_facet):
         facet_names = self.get_facet_names(unique_documents_by_facet)
         documents_count_by_facet_name = {}
         for index in range(len(facet_names)):
@@ -56,9 +56,13 @@ class DiscriminatingFacetsAlgo(object):
                 if facet[0] is facet_names[index]:
                     unique_documents.update(documents)
             documents_count_by_facet_name[facet_names[index]] = len(unique_documents)
+        return documents_count_by_facet_name
+
+    def get_facet_sample(self, unique_documents_by_facet):
+        documents_count_by_facet_name = self.get_documents_count_by_facet_name(unique_documents_by_facet)
 
         return {facet: documents for (facet, documents) in unique_documents_by_facet.items()
-                        if (documents_count_by_facet_name[facet[0]] >= self.min_documents_per_facet)}
+                if (documents_count_by_facet_name[facet[0]] >= self.min_documents_per_facet)}
 
     def get_uniformly_distributed_facets(self, unique_documents_by_facet):
         standard_deviation = 50
@@ -91,3 +95,10 @@ class DiscriminatingFacetsAlgo(object):
         facets_sample = self.get_facet_sample(unique_documents_by_facet)
         uniformly_distributed_facets = self.get_uniformly_distributed_facets(facets_sample)
         return self.get_facets_with_max_values(uniformly_distributed_facets)
+
+    def sort_discriminating_facets(self, unique_documents_by_facet):
+        values_by_facet = self.get_values_by_facet(unique_documents_by_facet)
+        documents_count_by_facet_name = self.get_documents_count_by_facet_name(unique_documents_by_facet)
+        return sorted(values_by_facet.items(),
+                      key=lambda values_by_facet : len(values_by_facet[1]) * documents_count_by_facet_name[values_by_facet[0]],
+                      reverse= True)
