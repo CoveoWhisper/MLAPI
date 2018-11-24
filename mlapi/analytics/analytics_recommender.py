@@ -1,3 +1,4 @@
+import os.path
 from collections import defaultdict
 from pathlib import Path
 from flask import json
@@ -57,10 +58,18 @@ def get_suggested_documents(documents_relatives_scores, documents_relative_popul
 
 class AnalyticsRecommender(object):
     def __init__(self):
-        with open(DOCUMENTS_SEARCHES_MAPPING_PATH) as documents_searches_mapping_file:
-            self.searches_documents_mapping = json.load(documents_searches_mapping_file)
-        with open(DOCUMENTS_POPULARITY_MAPPING_PATH) as documents_popularity_mapping_file:
-            documents_popularity_mapping = json.load(documents_popularity_mapping_file)
+        if os.path.isfile(DOCUMENTS_SEARCHES_MAPPING_PATH):
+            with open(DOCUMENTS_SEARCHES_MAPPING_PATH) as documents_searches_mapping_file:
+                self.searches_documents_mapping = json.load(documents_searches_mapping_file)
+                documents_searches_mapping_file.close()
+        else:
+            self.searches_documents_mapping = {}
+        if os.path.isfile(DOCUMENTS_POPULARITY_MAPPING_PATH):
+            with open(DOCUMENTS_POPULARITY_MAPPING_PATH) as documents_popularity_mapping_file:
+                documents_popularity_mapping = json.load(documents_popularity_mapping_file)
+                documents_popularity_mapping_file.close()
+        else:
+            documents_popularity_mapping = {}
         self.documents_relative_popularity = get_documents_relative_popularity(documents_popularity_mapping, POPULARITY_IMPORTANCE)
 
 
