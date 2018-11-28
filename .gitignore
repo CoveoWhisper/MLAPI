@@ -8,3 +8,6 @@ MANIFEST
 logs
 /facets.bin
 /appsettings.json
+
+/documents_popularity.json
+/documents_searches_mapping.json

@@ -12,7 +12,7 @@ from mlapi.facet_sense_analyzer import FacetSenseAnalyzer
 from mlapi.facet_sense_api import FacetSenseApi
 from mlapi.facet_dictionary import FacetDictionary
 from mlapi.model.facet_values import FacetValues
-
+from mlapi.analytics.analytics_recommender import AnalyticsRecommender
 
 FACETS_FILE = Path(Definitions.ROOT_DIR + "/facets.bin")
 
@@ -25,6 +25,8 @@ facets = facetDict.create_facet_dict(facets_by_document)
 
 facet_sense_api = FacetSenseApi()
 facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)
+
+analytics_recommender = AnalyticsRecommender()
 
 
 @app.route('/ML/FacetSense', methods=['POST'])
@@ -41,6 +43,13 @@ def ml_analyze():
     question_generator = QuestionGenerator()
     questions = question_generator.generate_questions(documents)
     return jsonify(questions)
+
+
+@app.route('/ML/Analytics', methods=['POST'])
+def analytics_analysis():
+    content = request.get_json()
+    suggested_documents = analytics_recommender.get_suggested_documents(content)
+    return jsonify(suggested_documents)
 
 
 @app.route('/ML/Filter/Facets', methods=['POST'])
