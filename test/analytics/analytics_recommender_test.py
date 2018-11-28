@@ -99,20 +99,29 @@ class TestIdentifyWordsInSearches(unittest.TestCase):
             "url3": 0.2,
             "url4": 0.1
         }
-        expected_result = {
-            "url1": {
-                "score": 1,
-                "title": "title1"
+        expected_result = [
+            {
+                "Document": {
+                    "Uri": "url1",
+                    "Title": "title1"
+                },
+                "Score": 1
             },
-            "url3": {
-                "score": 1,
-                "title": "title3"
+            {
+                "Document": {
+                    "Uri": "url3",
+                    "Title": "title3"
+                },
+                "Score": 1
             },
-            "url4": {
-                "score": 0.6,
-                "title": "title4"
+            {
+                "Document": {
+                    "Uri": "url4",
+                    "Title": "title4"
+                },
+                "Score": 0.6
             }
-        }
+        ]
         self.assertEqual(
             get_suggested_documents(documents_relatives_scores, documents_relative_popularity),
             expected_result

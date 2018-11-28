@@ -48,8 +48,7 @@ def ml_analyze():
 @app.route('/ML/Analytics', methods=['POST'])
 def analytics_analysis():
     content = request.get_json()
-    context_entities = content['ContextEntities']
-    suggested_documents = analytics_recommender.get_suggested_documents(context_entities)
+    suggested_documents = analytics_recommender.get_suggested_documents(content)
     return jsonify(suggested_documents)
 
 

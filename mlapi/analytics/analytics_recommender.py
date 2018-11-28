@@ -46,14 +46,17 @@ def get_documents_relatives_scores(searches_relative_scores, searches_documents_
 
 
 def get_suggested_documents(documents_relatives_scores, documents_relative_popularity):
-    return {
-        document: {
-            "score": min(relative_score_and_title["score"] + documents_relative_popularity[document], 1),
-            "title": relative_score_and_title["title"]
+    return [
+        {
+            "Document": {
+                "Uri": document,
+                "Title": relative_score_and_title["title"]
+            },
+            "Score": min(relative_score_and_title["score"] + documents_relative_popularity[document], 1)
         }
         for document, relative_score_and_title in documents_relatives_scores.items()
         if document in documents_relative_popularity
-    }
+    ]
 
 
 class AnalyticsRecommender(object):
@@ -75,11 +78,11 @@ class AnalyticsRecommender(object):
 
     def get_suggested_documents(self, context_entities):
         if not context_entities or not self.searches_documents_mapping or not self.documents_relative_popularity:
-            return {}
+            return []
         searches_relative_scores = get_searches_relatives_scores(self.searches_documents_mapping, context_entities, SEARCH_IMPORTANCE)
         if not searches_relative_scores:
-            return {}
+            return []
         documents_relatives_scores = get_documents_relatives_scores(searches_relative_scores, self.searches_documents_mapping)
         if not documents_relatives_scores:
-            return {}
+            return []
         return get_suggested_documents(documents_relatives_scores, self.documents_relative_popularity)
