@@ -14,8 +14,17 @@ FACETS_FILE = Path(Definitions.ROOT_DIR + "/facets.bin")
 app = Flask(__name__)
 app.json_encoder = ObjectEncoder
 loader = FacetLoader()
-facets_by_document = loader.load_facets(FACETS_FILE)
+facets_by_document_temp = loader.load_facets(FACETS_FILE)
+facets_by_document = dict()
+for document in facets_by_document_temp:
+    facet_dict = dict()
+    for facet in facets_by_document_temp[document]:
+        if facet.name in facet_dict:
+            facet_dict[facet.name].append(facet.value)
+        else:
+            facet_dict[facet.name] = [facet.value]
 
+    facets_by_document[document] = facet_dict
 
 @app.route('/ML/Analyze', methods=['POST'])
 def ml_analyze():
