@@ -12,6 +12,8 @@ from mlapi.facet_sense_analyzer import FacetSenseAnalyzer
 from mlapi.facet_sense_api import FacetSenseApi
 from mlapi.facet_dictionary import FacetDictionary
 from mlapi.model.facet_values import FacetValues
+import pickle
+from mlapi.AI_recommenders.k_means_clustering_recommender import KmeansClusteringRecommender
 
 
 FACETS_FILE = Path(Definitions.ROOT_DIR + "/facets.bin")
@@ -26,6 +28,21 @@ facets = facetDict.create_facet_dict(facets_by_document)
 facet_sense_api = FacetSenseApi()
 facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)
 
+bin_file = open('AI_models/tf_idf_vectorizer.bin', 'rb')
+tf_idf_vectorizer = pickle.load(bin_file)
+bin_file.close()
+bin_file = open('AI_models/k_means_clustering_model.bin', 'rb')
+clustering_model = pickle.load(bin_file)
+bin_file.close()
+
+@app.route('/ML/KmeansRecommender', methods=['POST'])
+def get_recommended_documents():
+    content = request.get_json()
+    query = content["sentence"]
+    uris = content["documents"]
+    clustering_recommender = KmeansClusteringRecommender(tf_idf_vectorizer, clustering_model)
+    suggested_documents = clustering_recommender.get_recommended_documents(query, uris)
+    return jsonify(suggested_documents)
 
 @app.route('/ML/FacetSense', methods=['POST'])
 def facet_sense():
@@ -69,6 +86,8 @@ def get_facet_values():
         facet_values.append(FacetValues(name, facets.get(name)))
 
     return jsonify(facet_values)
+
+
 
 
 if __name__ == '__main__':

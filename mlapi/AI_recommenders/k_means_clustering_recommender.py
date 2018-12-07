@@ -29,6 +29,19 @@ class KmeansClusteringRecommender(object):
         related_documents = [urls[index] for index in range(len(documents_clusters)) if documents_clusters[index]==query_cluster]
         return related_documents
 
+    def get_suggested_documents(related_documents, scores):
+        return [
+            {
+                "Document": {
+                    "Uri": related_documents[index],
+                    "Title": ''
+                },
+                "Score": scores[index]
+            }
+            for index in range(len(related_documents))
+
+        ]
+
     def get_recommended_documents(self, query, urls):
         extracted_documents = self.extract_documents(urls)
         parsed_documents = {index : parseText(text) for index, text in extracted_documents.items()}
@@ -42,6 +55,7 @@ class KmeansClusteringRecommender(object):
         labels = self.k_means.predict(tf_idf_matrix_test)
         print('all clusters : ', labels.tolist())
         related_documents = self.get_related_documents(labels, urls)
-        return related_documents
+        scores = [1 for document in related_documents]
+        return self.get_suggested_documents(related_documents, scores)
 
 
