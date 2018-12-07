@@ -11,25 +11,28 @@ class KmeansClusteringRecommender(object):
     def __init__(self, tf_idf_vectorizer, k_means_clustering_model):
         self.tfidf_vectorizer = tf_idf_vectorizer
         self.k_means = k_means_clustering_model
+        self.extracted_documents = []
 
-    def extract_documents(self, urls):
+    def extract_documents(self, uris):
         factory = ExtractorFactory()
         extracted_documents = {}
-        for index in range(len(urls)):
-            extractor = factory.fromFilePath(urls[index], 'html', HEADERS)
+        for index in range(len(uris)):
+            extractor = factory.fromFilePath(uris[index], 'html', HEADERS)
             if extractor != None:
                 extracted_text = extractor.extractAllText()
                 if extracted_text:
                     extracted_documents[index] = extracted_text
+                    self.extracted_documents.append(uris[index])
         return  extracted_documents
 
     def get_related_documents(self, labels, urls):
         query_cluster = labels[0]
         documents_clusters= labels[1:]
-        related_documents = [urls[index] for index in range(len(documents_clusters)) if documents_clusters[index]==query_cluster]
+        related_documents = [urls[index] for index in range(len(documents_clusters))
+                             if (documents_clusters[index]==query_cluster) and (urls[index] in self.extracted_documents)]
         return related_documents
 
-    def get_suggested_documents(related_documents, scores):
+    def get_json_response(self, related_documents, scores):
         return [
             {
                 "Document": {
@@ -39,11 +42,10 @@ class KmeansClusteringRecommender(object):
                 "Score": scores[index]
             }
             for index in range(len(related_documents))
-
         ]
 
-    def get_recommended_documents(self, query, urls):
-        extracted_documents = self.extract_documents(urls)
+    def get_recommended_documents(self, query, uris):
+        extracted_documents = self.extract_documents(uris)
         parsed_documents = {index : parseText(text) for index, text in extracted_documents.items()}
 
         query = 'Hello, can I push analytics to the organization?'
@@ -54,8 +56,9 @@ class KmeansClusteringRecommender(object):
         tf_idf_matrix_test = self.tfidf_vectorizer.transform(predicting_data)
         labels = self.k_means.predict(tf_idf_matrix_test)
         print('all clusters : ', labels.tolist())
-        related_documents = self.get_related_documents(labels, urls)
+        related_documents = self.get_related_documents(labels, uris)
         scores = [1 for document in related_documents]
-        return self.get_suggested_documents(related_documents, scores)
+
+        return self.get_json_response(related_documents, scores)
 
 

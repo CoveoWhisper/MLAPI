@@ -41,8 +41,8 @@ def get_recommended_documents():
     query = content["sentence"]
     uris = content["documents"]
     clustering_recommender = KmeansClusteringRecommender(tf_idf_vectorizer, clustering_model)
-    suggested_documents = clustering_recommender.get_recommended_documents(query, uris)
-    return jsonify(suggested_documents)
+    recommended_documents = clustering_recommender.get_recommended_documents(query, uris)
+    return jsonify(recommended_documents)
 
 @app.route('/ML/FacetSense', methods=['POST'])
 def facet_sense():
