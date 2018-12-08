@@ -13,7 +13,7 @@ from mlapi.facet_sense_api import FacetSenseApi
 from mlapi.facet_dictionary import FacetDictionary
 from mlapi.model.facet_values import FacetValues
 import pickle
-from mlapi.AI_recommenders.k_means_clustering_recommender import KmeansClusteringRecommender
+from mlapi.AI_recommenders.AI_document_recommender import DocumentRecommender
 
 
 FACETS_FILE = Path(Definitions.ROOT_DIR + "/facets.bin")
@@ -35,13 +35,13 @@ bin_file = open('AI_models/k_means_clustering_model.bin', 'rb')
 clustering_model = pickle.load(bin_file)
 bin_file.close()
 
-@app.route('/ML/KmeansRecommender', methods=['POST'])
+@app.route('/ML/AI_Recommender', methods=['POST'])
 def get_recommended_documents():
     content = request.get_json()
     query = content["sentence"]
     uris = content["documents"]
-    clustering_recommender = KmeansClusteringRecommender(tf_idf_vectorizer, clustering_model)
-    recommended_documents = clustering_recommender.get_recommended_documents(query, uris)
+    recommender = DocumentRecommender(tf_idf_vectorizer, clustering_model)
+    recommended_documents = recommender.get_recommended_documents(query, uris)
     return jsonify(recommended_documents)
 
 @app.route('/ML/FacetSense', methods=['POST'])
