@@ -1,5 +1,6 @@
 import statistics
 
+from mlapi.model.facet_score_value import FacetScoreValues
 from mlapi.model.facet_values import FacetValues
 from  mlapi.utilities import invert_dictionary
 
@@ -115,6 +116,6 @@ class DiscriminatingFacetsAlgo(object):
         facet_values_score = []
         for (facetName, facetValue) in values_by_facet.items():
             score = (len(facetValue) * documents_count_by_facet_name[facetName] - min_value) / difference_max_min
-            facet_values_score.append(FacetValues(facetName, facetValue, score))
+            facet_values_score.append(FacetScoreValues(facetName, facetValue, score))
         facet_values_score.sort(key=lambda facet: facet.score, reverse=True)
         return facet_values_score
