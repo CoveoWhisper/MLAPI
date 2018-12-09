@@ -1,4 +1,6 @@
 import statistics
+
+from mlapi.model.facet_values import FacetValues
 from  mlapi.utilities import invert_dictionary
 
 
@@ -18,7 +20,7 @@ class DiscriminatingFacetsAlgo(object):
             documents_by_discriminating_facets.clear()
             unique_documents_by_facet = self.get_unique_documents_by_facet(documents_by_facet)
             documents_by_discriminating_facets = self.execute_discriminating_facets_algorithm(unique_documents_by_facet)
-        return self.sort_discriminating_facets(documents_by_discriminating_facets)
+        return self.score_discriminating_facets(documents_by_discriminating_facets)
 
     def get_unique_documents_by_facet(self, documents_by_facet):
         unique_documents_by_facet = {}
@@ -96,9 +98,23 @@ class DiscriminatingFacetsAlgo(object):
         uniformly_distributed_facets = self.get_uniformly_distributed_facets(facets_sample)
         return self.get_facets_with_max_values(uniformly_distributed_facets)
 
-    def sort_discriminating_facets(self, unique_documents_by_facet):
+    def score_discriminating_facets(self, unique_documents_by_facet):
         values_by_facet = self.get_values_by_facet(unique_documents_by_facet)
         documents_count_by_facet_name = self.get_documents_count_by_facet_name(unique_documents_by_facet)
-        return sorted(values_by_facet.items(),
-                      key=lambda values_by_facet : len(values_by_facet[1]) * documents_count_by_facet_name[values_by_facet[0]],
-                      reverse= True)
+
+        max_value = 0
+        min_value = 100
+        eps = 1e-16
+        for (facetName, facetValue) in values_by_facet.items():
+            value = len(facetValue) * documents_count_by_facet_name[facetName]
+            if value > max_value:
+                max_value = value
+            if value < min_value:
+                min_value = value
+        difference_max_min = max_value - min_value + eps
+        facet_values_score = []
+        for (facetName, facetValue) in values_by_facet.items():
+            score = (len(facetValue) * documents_count_by_facet_name[facetName] - min_value) / difference_max_min
+            facet_values_score.append(FacetValues(facetName, facetValue, score))
+        facet_values_score.sort(key=lambda facet: facet.score, reverse=True)
+        return facet_values_score
