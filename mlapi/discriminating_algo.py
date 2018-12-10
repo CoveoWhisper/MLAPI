@@ -100,22 +100,16 @@ class DiscriminatingFacetsAlgo(object):
         return self.get_facets_with_max_values(uniformly_distributed_facets)
 
     def score_discriminating_facets(self, unique_documents_by_facet):
+        if not bool(unique_documents_by_facet):
+            return {}
         values_by_facet = self.get_values_by_facet(unique_documents_by_facet)
         documents_count_by_facet_name = self.get_documents_count_by_facet_name(unique_documents_by_facet)
 
-        max_value = 0
-        min_value = 100
-        eps = 1e-16
-        for (facetName, facetValue) in values_by_facet.items():
-            value = len(facetValue) * documents_count_by_facet_name[facetName]
-            if value > max_value:
-                max_value = value
-            if value < min_value:
-                min_value = value
-        difference_max_min = max_value - min_value + eps
-        facet_values_score = []
-        for (facetName, facetValue) in values_by_facet.items():
-            score = (len(facetValue) * documents_count_by_facet_name[facetName] - min_value) / difference_max_min
-            facet_values_score.append(FacetScoreValues(facetName, facetValue, score))
+        facet_values_score = [
+            FacetScoreValues(facetName, facetValue, (len(facetValue) * documents_count_by_facet_name[facetName])) for
+            (facetName, facetValue) in values_by_facet.items()]
+        max_value = max([facetScoreValue.score for facetScoreValue in facet_values_score])
+        for facetScoreValue in facet_values_score:
+            facetScoreValue.score = facetScoreValue.score / max_value
         facet_values_score.sort(key=lambda facet: facet.score, reverse=True)
         return facet_values_score

@@ -26,7 +26,7 @@ class TestDiscriminatingFacets(unittest.TestCase):
         self.assertEqual(len(discriminating_facets), 1)
         self.assertEqual(discriminating_facets[0].name, 'NameA')
         self.assertEqual(discriminating_facets[0].values, ['ValueA1', 'ValueA2'])
-        self.assertEqual(discriminating_facets[0].score, 0)
+        self.assertEqual(discriminating_facets[0].score, 1)
 
     def test_when_2_discriminating_facets_then_run_one_time_algorithm_and_return_2_facets(self):
         discriminating_algo = DiscriminatingFacetsAlgo()
@@ -45,7 +45,7 @@ class TestDiscriminatingFacets(unittest.TestCase):
         self.assertEqual(discriminating_facets[0].score, 1)
         self.assertEqual(discriminating_facets[1].name, 'NameA')
         self.assertEqual(discriminating_facets[1].values, ['ValueA1', 'ValueA2'])
-        self.assertEqual(discriminating_facets[1].score, 0)
+        self.assertEqual(round(discriminating_facets[1].score, 2), 0.67)
 
     def test_when_facet_dont_have_3_documents_then_return_0_facet(self):
         discriminating_algo = DiscriminatingFacetsAlgo()
