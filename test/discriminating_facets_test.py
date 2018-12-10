@@ -1,5 +1,6 @@
 import unittest
 from mlapi.model.facet import Facet
+from mlapi.model.facet_values import FacetValues
 from mlapi.question_generator import DiscriminatingFacetsAlgo
 import statistics
 
@@ -23,8 +24,9 @@ class TestDiscriminatingFacets(unittest.TestCase):
 
         discriminating_facets = discriminating_algo.get_discriminating_facets(facets_by_document)
         self.assertEqual(len(discriminating_facets), 1)
-        self.assertEqual(discriminating_facets[0][0], 'NameA')
-        self.assertEqual(discriminating_facets[0][1], ['ValueA1', 'ValueA2'])
+        self.assertEqual(discriminating_facets[0].name, 'NameA')
+        self.assertEqual(discriminating_facets[0].values, ['ValueA1', 'ValueA2'])
+        self.assertEqual(discriminating_facets[0].score, 1)
 
     def test_when_2_discriminating_facets_then_run_one_time_algorithm_and_return_2_facets(self):
         discriminating_algo = DiscriminatingFacetsAlgo()
@@ -38,10 +40,12 @@ class TestDiscriminatingFacets(unittest.TestCase):
 
         discriminating_facets = discriminating_algo.get_discriminating_facets(facets_by_document)
         self.assertEqual(len(discriminating_facets), 2)
-        self.assertEqual(discriminating_facets[0][0], 'NameC')
-        self.assertEqual(discriminating_facets[0][1], ['ValueC1', 'ValueC2', 'ValueC3'])
-        self.assertEqual(discriminating_facets[1][0], 'NameA')
-        self.assertEqual(discriminating_facets[1][1], ['ValueA1', 'ValueA2'])
+        self.assertEqual(discriminating_facets[0].name, 'NameC')
+        self.assertEqual(discriminating_facets[0].values, ['ValueC1', 'ValueC2', 'ValueC3'])
+        self.assertEqual(discriminating_facets[0].score, 1)
+        self.assertEqual(discriminating_facets[1].name, 'NameA')
+        self.assertEqual(discriminating_facets[1].values, ['ValueA1', 'ValueA2'])
+        self.assertEqual(round(discriminating_facets[1].score, 2), 0.67)
 
     def test_when_facet_dont_have_3_documents_then_return_0_facet(self):
         discriminating_algo = DiscriminatingFacetsAlgo()

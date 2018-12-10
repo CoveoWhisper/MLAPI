@@ -1,4 +1,7 @@
 import statistics
+
+from mlapi.model.facet_score_value import FacetScoreValues
+from mlapi.model.facet_values import FacetValues
 from  mlapi.utilities import invert_dictionary
 
 
@@ -18,7 +21,7 @@ class DiscriminatingFacetsAlgo(object):
             documents_by_discriminating_facets.clear()
             unique_documents_by_facet = self.get_unique_documents_by_facet(documents_by_facet)
             documents_by_discriminating_facets = self.execute_discriminating_facets_algorithm(unique_documents_by_facet)
-        return self.sort_discriminating_facets(documents_by_discriminating_facets)
+        return self.score_discriminating_facets(documents_by_discriminating_facets)
 
     def get_unique_documents_by_facet(self, documents_by_facet):
         unique_documents_by_facet = {}
@@ -96,9 +99,17 @@ class DiscriminatingFacetsAlgo(object):
         uniformly_distributed_facets = self.get_uniformly_distributed_facets(facets_sample)
         return self.get_facets_with_max_values(uniformly_distributed_facets)
 
-    def sort_discriminating_facets(self, unique_documents_by_facet):
+    def score_discriminating_facets(self, unique_documents_by_facet):
+        if not bool(unique_documents_by_facet):
+            return {}
         values_by_facet = self.get_values_by_facet(unique_documents_by_facet)
         documents_count_by_facet_name = self.get_documents_count_by_facet_name(unique_documents_by_facet)
-        return sorted(values_by_facet.items(),
-                      key=lambda values_by_facet : len(values_by_facet[1]) * documents_count_by_facet_name[values_by_facet[0]],
-                      reverse= True)
+
+        facet_values_score = [
+            FacetScoreValues(facetName, facetValue, (len(facetValue) * documents_count_by_facet_name[facetName])) for
+            (facetName, facetValue) in values_by_facet.items()]
+        max_value = max([facetScoreValue.score for facetScoreValue in facet_values_score])
+        for facetScoreValue in facet_values_score:
+            facetScoreValue.score = facetScoreValue.score / max_value
+        facet_values_score.sort(key=lambda facet: facet.score, reverse=True)
+        return facet_values_score
