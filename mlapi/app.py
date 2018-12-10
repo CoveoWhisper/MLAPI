@@ -28,11 +28,14 @@ facets = facetDict.create_facet_dict(facets_by_document)
 facet_sense_api = FacetSenseApi()
 facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)
 
-bin_file = open('AI_models/tf_idf_vectorizer.bin', 'rb')
+bin_file = open('mlapi/AI_models/tf_idf_vectorizer.bin', 'rb')
 tf_idf_vectorizer = pickle.load(bin_file)
 bin_file.close()
-bin_file = open('AI_models/k_means_clustering_model.bin', 'rb')
+bin_file = open('mlapi/AI_models/k_means_clustering_model.bin', 'rb')
 clustering_model = pickle.load(bin_file)
+bin_file.close()
+bin_file = open('mlapi/AI_models/parsedQuickView.bin', 'rb')
+uri_to_quickView = pickle.load(bin_file)
 bin_file.close()
 
 @app.route('/ML/AI_Recommender', methods=['POST'])
@@ -40,7 +43,7 @@ def get_recommended_documents():
     content = request.get_json()
     query = content["sentence"]
     uris = content["documents"]
-    recommender = DocumentRecommender(tf_idf_vectorizer, clustering_model)
+    recommender = DocumentRecommender(tf_idf_vectorizer, clustering_model, uri_to_quickView)
     recommended_documents = recommender.get_recommended_documents(query, uris)
     return jsonify(recommended_documents)
 
