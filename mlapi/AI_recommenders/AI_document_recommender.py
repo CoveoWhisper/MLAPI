@@ -19,19 +19,20 @@ class DocumentRecommender(object):
         parsed_documents = {uri: self.uri_to_quickView[uri] for uri in document_uris if uri in self.uri_to_quickView}
         self.extracted_uris = parsed_documents.keys()
 
+        if not self.extracted_uris:
+            return []
+
         # linear kernel similarity
         similarity_documents = self.get_linear_kernel_simillar_documents(query, document_uris, parsed_documents)
-        #print('similarity recommender :', similarity_documents)
+
         # unsupervised knn
         neighbors_documents = self.get_unsupervised_knn_neighbors(query, document_uris, parsed_documents)
-        #print('neighbors recommender :', neighbors_documents)
 
         # k_means
         k_means_documents = self.get_k_means_query_cluster_documents(query, document_uris, parsed_documents)
-        #print('k means recommender : ', k_means_documents)
+
         # final scores
         final_recommended_documents = self.get_final_scores(k_means_documents, neighbors_documents, similarity_documents)
-        #print(final_recommended_documents)
 
         return self.get_json_response(final_recommended_documents)
 
@@ -49,6 +50,7 @@ class DocumentRecommender(object):
         ]
 
 #**************************************************** calculate scores *****************************************
+
     def get_k_means_cluster_documents_with_score(self, labels, document_uris):
         query_cluster = labels[0]
         documents_clusters = labels[1:]
@@ -64,9 +66,11 @@ class DocumentRecommender(object):
 
     def get_unsupervised_knn_neighbors_with_scores(self, indices, document_uris):
         indices = indices.tolist()[0]
-        #print('knn indices :', indices)
-        #print('knn indice 0 :', (indices[0]+1)*0.1)
-        return [(document_uris[index], (len(indices)-index) * 0.1) for index in range(len(indices)) if
+        normalizer = 0
+        if(len(indices)<10):
+            normalizer = 10 - len(indices)
+
+        return [(document_uris[index], ((len(indices)+ normalizer)-index) * 0.1) for index in range(len(indices)) if
                 document_uris[index] in self.extracted_uris]
 
     def unify_scores(self, document_scores):
@@ -74,6 +78,7 @@ class DocumentRecommender(object):
         for uri in self.extracted_uris:
             if uri not in all_document_scores.keys():
                 all_document_scores[uri] = 0
+
         return all_document_scores
 
     def get_final_scores(self, k_means_documents, neighbors_documents, similarity_documents):
@@ -82,14 +87,15 @@ class DocumentRecommender(object):
         return sorted(final_recommendation, key=lambda x:x[1], reverse=True)
 
 #******************************************************* The 3 recommenders ********************************************
+
     def get_k_means_query_cluster_documents(self, query, document_uris, parsed_documents):
         predicting_data = []
         predicting_data.append(query)
         predicting_data.extend(parsed_documents.values())
         tf_idf_matrix = self.tfidf_vectorizer.transform(predicting_data)
         labels = self.k_means.predict(tf_idf_matrix)
-        #print(labels)
         recommended_documents = self.get_k_means_cluster_documents_with_score(labels, document_uris)
+
         return self.unify_scores(recommended_documents)
 
     def get_linear_kernel_simillar_documents(self, query, document_uris, parsed_documents):
@@ -105,9 +111,14 @@ class DocumentRecommender(object):
     def get_unsupervised_knn_neighbors(self, query, document_uris, parsed_documents):
         tf_idf_matrix = self.tfidf_vectorizer.transform(parsed_documents.values())
 
-        neighbors = NearestNeighbors(n_neighbors=10)
+        if len(self.extracted_uris)<10 :
+            k = len(self.extracted_uris)
+        else :
+            k = 10
+
+        neighbors = NearestNeighbors(n_neighbors=k)
         neighbors.fit(tf_idf_matrix)
-        distances, indices = neighbors.kneighbors(self.tfidf_vectorizer.transform([query]), 10)
+        distances, indices = neighbors.kneighbors(self.tfidf_vectorizer.transform([query]), k)
 
         recommended_documents = self.get_unsupervised_knn_neighbors_with_scores(indices, document_uris)
 
