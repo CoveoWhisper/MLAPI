@@ -11,7 +11,10 @@ from mlapi.facet_sense_analyzer import FacetSenseAnalyzer
 from mlapi.facet_sense_api import FacetSenseApi
 from mlapi.facet_dictionary import FacetDictionary
 from mlapi.model.facet_values import FacetValues
+from mlapi.AI_recommenders.AI_document_recommender import DocumentRecommender
 from mlapi.analytics.analytics_recommender import AnalyticsRecommender
+
+import pickle
 
 FACETS_FILE = Path(Definitions.ROOT_DIR + "/facets.bin")
 
@@ -37,6 +40,25 @@ facet_sense_api = FacetSenseApi()
 facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)
 
 analytics_recommender = AnalyticsRecommender()
+
+bin_file = open('mlapi/AI_models/tf_idf_vectorizer.bin', 'rb')
+tf_idf_vectorizer = pickle.load(bin_file)
+bin_file.close()
+bin_file = open('mlapi/AI_models/k_means_clustering_model.bin', 'rb')
+clustering_model = pickle.load(bin_file)
+bin_file.close()
+bin_file = open('mlapi/AI_models/parsedQuickView.bin', 'rb')
+uri_to_quickView = pickle.load(bin_file)
+bin_file.close()
+
+@app.route('/ML/NearestDocuments', methods=['POST'])
+def get_recommended_documents():
+    content = request.get_json()
+    query = content['ParsedQuery']
+    uris = content['DocumentsUri']
+    recommender = DocumentRecommender(tf_idf_vectorizer, clustering_model, uri_to_quickView)
+    recommended_documents = recommender.get_recommended_documents(query, uris)
+    return jsonify(recommended_documents)
 
 @app.route('/ML/FacetSense', methods=['POST'])
 def facet_sense():
@@ -86,6 +108,8 @@ def get_facet_values():
         facet_values.append(FacetValues(name, facets.get(name)))
 
     return jsonify(facet_values)
+
+
 
 
 if __name__ == '__main__':

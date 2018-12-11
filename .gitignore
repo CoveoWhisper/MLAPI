@@ -1,6 +1,7 @@
 .idea
 .tox
 .pytest_cache
+*.bin
 MANIFEST
 */__pycache__
 **.pyc
@@ -8,6 +9,6 @@ MANIFEST
 logs
 /facets.bin
 /appsettings.json
-
+venv
 /documents_popularity.json
 /documents_searches_mapping.json
