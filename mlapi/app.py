@@ -38,7 +38,7 @@ bin_file = open('mlapi/AI_models/parsedQuickView.bin', 'rb')
 uri_to_quickView = pickle.load(bin_file)
 bin_file.close()
 
-@app.route('ML/NearestDocuments', methods=['POST'])
+@app.route('/ML/NearestDocuments', methods=['POST'])
 def get_recommended_documents():
     content = request.get_json()
     query = content['ParsedQuery']

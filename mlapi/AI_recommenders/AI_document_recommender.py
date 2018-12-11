@@ -3,7 +3,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.cluster import KMeans
 import pickle
 from mlapi.AI_recommenders.parse_utilities import parseText
-from mlapi.extractors.factory import ExtractorFactory
 from sklearn.metrics.pairwise import linear_kernel
 from sklearn.neighbors import NearestNeighbors
 
