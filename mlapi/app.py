@@ -38,11 +38,11 @@ bin_file = open('mlapi/AI_models/parsedQuickView.bin', 'rb')
 uri_to_quickView = pickle.load(bin_file)
 bin_file.close()
 
-@app.route('/ML/AI_Recommender', methods=['POST'])
+@app.route('ML/NearestDocuments', methods=['POST'])
 def get_recommended_documents():
     content = request.get_json()
     query = content["sentence"]
-    uris = content["documents"]
+    uris = content["DocumentsUri "]
     recommender = DocumentRecommender(tf_idf_vectorizer, clustering_model, uri_to_quickView)
     recommended_documents = recommender.get_recommended_documents(query, uris)
     return jsonify(recommended_documents)
