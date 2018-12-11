@@ -1,4 +1,7 @@
 import statistics
+
+from mlapi.model.facet_score_value import FacetScoreValues
+from mlapi.model.facet_values import FacetValues
 from  mlapi.utilities import invert_dictionary
 
 
@@ -18,7 +21,7 @@ class DiscriminatingFacetsAlgo(object):
             documents_by_discriminating_facets.clear()
             unique_documents_by_facet = self.get_unique_documents_by_facet(documents_by_facet)
             documents_by_discriminating_facets = self.execute_discriminating_facets_algorithm(unique_documents_by_facet)
-        return self.get_values_by_facet(documents_by_discriminating_facets)
+        return self.score_discriminating_facets(documents_by_discriminating_facets)
 
     def get_unique_documents_by_facet(self, documents_by_facet):
         unique_documents_by_facet = {}
@@ -47,7 +50,7 @@ class DiscriminatingFacetsAlgo(object):
                     values_by_facet[facet[0]].append(facet[1])
         return values_by_facet
 
-    def get_facet_sample(self, unique_documents_by_facet):
+    def get_documents_count_by_facet_name(self, unique_documents_by_facet):
         facet_names = self.get_facet_names(unique_documents_by_facet)
         documents_count_by_facet_name = {}
         for index in range(len(facet_names)):
@@ -56,9 +59,13 @@ class DiscriminatingFacetsAlgo(object):
                 if facet[0] is facet_names[index]:
                     unique_documents.update(documents)
             documents_count_by_facet_name[facet_names[index]] = len(unique_documents)
+        return documents_count_by_facet_name
+
+    def get_facet_sample(self, unique_documents_by_facet):
+        documents_count_by_facet_name = self.get_documents_count_by_facet_name(unique_documents_by_facet)
 
         return {facet: documents for (facet, documents) in unique_documents_by_facet.items()
-                        if (documents_count_by_facet_name[facet[0]] >= self.min_documents_per_facet)}
+                if (documents_count_by_facet_name[facet[0]] >= self.min_documents_per_facet)}
 
     def get_uniformly_distributed_facets(self, unique_documents_by_facet):
         standard_deviation = 50
@@ -91,3 +98,18 @@ class DiscriminatingFacetsAlgo(object):
         facets_sample = self.get_facet_sample(unique_documents_by_facet)
         uniformly_distributed_facets = self.get_uniformly_distributed_facets(facets_sample)
         return self.get_facets_with_max_values(uniformly_distributed_facets)
+
+    def score_discriminating_facets(self, unique_documents_by_facet):
+        if not bool(unique_documents_by_facet):
+            return {}
+        values_by_facet = self.get_values_by_facet(unique_documents_by_facet)
+        documents_count_by_facet_name = self.get_documents_count_by_facet_name(unique_documents_by_facet)
+
+        facet_values_score = [
+            FacetScoreValues(facetName, facetValue, (len(facetValue) * documents_count_by_facet_name[facetName])) for
+            (facetName, facetValue) in values_by_facet.items()]
+        max_value = max([facetScoreValue.score for facetScoreValue in facet_values_score])
+        for facetScoreValue in facet_values_score:
+            facetScoreValue.score = facetScoreValue.score / max_value
+        facet_values_score.sort(key=lambda facet: facet.score, reverse=True)
+        return facet_values_score

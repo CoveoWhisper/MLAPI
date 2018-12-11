@@ -3,6 +3,8 @@ from mlapi.model.question import Question
 from mlapi.discriminating_algo import DiscriminatingFacetsAlgo
 import uuid
 
+from mlapi.model.question_result import QuestionResult
+
 
 class QuestionGenerator(object):
     def generate_questions(self, facets_by_document):
@@ -11,8 +13,10 @@ class QuestionGenerator(object):
 
         values_by_name = self.get_discriminating_facets(facets_by_document)
         questions = []
-        for key, values in values_by_name.items():
-            questions.append(Question(id=str(uuid.uuid4()), facet_name=key, facet_values=list(set(values)), answer="", status="None"))
+        for facet in values_by_name:
+            question = Question(id=str(uuid.uuid4()), facet_name=facet.name, facet_values=list(set(facet.values)),
+                     answer="", status="None")
+            questions.append(QuestionResult(question, facet.score))
         return questions
 
     def get_discriminating_facets(self, facets_by_document):

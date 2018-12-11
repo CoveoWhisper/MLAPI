@@ -10,3 +10,5 @@ logs
 /facets.bin
 /appsettings.json
 venv
+/documents_popularity.json
+/documents_searches_mapping.json
