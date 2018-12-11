@@ -41,8 +41,8 @@ bin_file.close()
 @app.route('/ML/NearestDocuments', methods=['POST'])
 def get_recommended_documents():
     content = request.get_json()
-    query = content['ParsedQuery']
-    uris = content['DocumentsUri']
+    query = content['parsedQuery']
+    uris = content['documentsUri']
     recommender = DocumentRecommender(tf_idf_vectorizer, clustering_model, uri_to_quickView)
     recommended_documents = recommender.get_recommended_documents(query, uris)
     return jsonify(recommended_documents)
