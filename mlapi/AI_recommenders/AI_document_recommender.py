@@ -67,8 +67,7 @@ class DocumentRecommender(object):
     def get_unsupervised_knn_neighbors_with_scores(self, indices, document_uris):
         indices = indices.tolist()[0]
         normalizer = 0
-        if(len(indices)<10):
-            normalizer = 10 - len(indices)
+        normalizer = 10 - len(indices)
 
         return [(document_uris[index], ((len(indices)+ normalizer)-index) * 0.1) for index in range(len(indices)) if
                 document_uris[index] in self.extracted_uris]
@@ -111,10 +110,7 @@ class DocumentRecommender(object):
     def get_unsupervised_knn_neighbors(self, query, document_uris, parsed_documents):
         tf_idf_matrix = self.tfidf_vectorizer.transform(parsed_documents.values())
 
-        if len(self.extracted_uris)<10 :
-            k = len(self.extracted_uris)
-        else :
-            k = 10
+        k = min(10, len(self.extracted_uris))
 
         neighbors = NearestNeighbors(n_neighbors=k)
         neighbors.fit(tf_idf_matrix)
