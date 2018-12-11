@@ -66,7 +66,6 @@ class DocumentRecommender(object):
 
     def get_unsupervised_knn_neighbors_with_scores(self, indices, document_uris):
         indices = indices.tolist()[0]
-        normalizer = 0
         normalizer = 10 - len(indices)
 
         return [(document_uris[index], ((len(indices)+ normalizer)-index) * 0.1) for index in range(len(indices)) if
