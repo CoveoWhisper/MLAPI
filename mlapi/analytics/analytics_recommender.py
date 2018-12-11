@@ -22,10 +22,10 @@ def get_documents_relative_popularity(documents_popularity_mapping, popularity_i
 
 
 def get_searches_relatives_scores(searches_documents_mapping, context_entities, search_importance):
-    max_score = len(context_entities)
     searches_relative_scores = defaultdict(float)
     for search in searches_documents_mapping:
         search_words = search.split()
+        max_score = max(2, len(search_words))
         context_entity_in_search_words = 0
         for context_entity in context_entities:
             if context_entity in search_words:
