@@ -4,3 +4,5 @@ flask==0.12.4
 pytest
 pytest-flask
 tensorflow==1.5
+scikit-learn==0.20.1
+nltk
