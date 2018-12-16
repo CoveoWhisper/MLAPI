@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, request, jsonify
 
 from pathlib import Path
@@ -41,15 +43,17 @@ facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)
 
 analytics_recommender = AnalyticsRecommender()
 
-bin_file = open('mlapi/AI_models/tf_idf_vectorizer.bin', 'rb')
-tf_idf_vectorizer = pickle.load(bin_file)
-bin_file.close()
-bin_file = open('mlapi/AI_models/k_means_clustering_model.bin', 'rb')
-clustering_model = pickle.load(bin_file)
-bin_file.close()
-bin_file = open('mlapi/AI_models/parsedQuickView.bin', 'rb')
-uri_to_quickView = pickle.load(bin_file)
-bin_file.close()
+tf_idf_vectorizer_file_path = 'mlapi/AI_models/tf_idf_vectorizer.bin'
+if os.path.isfile(tf_idf_vectorizer_file_path):
+    bin_file = open(tf_idf_vectorizer_file_path, 'rb')
+    tf_idf_vectorizer = pickle.load(bin_file)
+    bin_file.close()
+    bin_file = open('mlapi/AI_models/k_means_clustering_model.bin', 'rb')
+    clustering_model = pickle.load(bin_file)
+    bin_file.close()
+    bin_file = open('mlapi/AI_models/parsedQuickView.bin', 'rb')
+    uri_to_quickView = pickle.load(bin_file)
+    bin_file.close()
 
 @app.route('/ML/NearestDocuments', methods=['POST'])
 def get_recommended_documents():
