@@ -51,6 +51,9 @@ bin_file = open('mlapi/AI_models/parsedQuickView.bin', 'rb')
 uri_to_quickView = pickle.load(bin_file)
 bin_file.close()
 
+'''
+This method returns all documents from NearestDocument recommender
+'''
 @app.route('/ML/NearestDocuments', methods=['POST'])
 def get_recommended_documents():
     content = request.get_json()
@@ -66,6 +69,10 @@ def facet_sense():
     analysis = facet_sense_analyzer.analyze(content['Query'])
     return jsonify(analysis)
 
+
+'''
+This method analyze the documents and generates questions
+'''
 @app.route('/ML/Analyze', methods=['POST'])
 def ml_analyze():
     requested_documents = request.get_json()
@@ -75,6 +82,9 @@ def ml_analyze():
     return jsonify(questions)
 
 
+'''
+This method returns all documents from analytics
+'''
 @app.route('/ML/Analytics', methods=['POST'])
 def analytics_analysis():
     content = request.get_json()
@@ -82,6 +92,9 @@ def analytics_analysis():
     return jsonify(suggested_documents)
 
 
+'''
+This method filters the documents received and returns list of documents filtered
+'''
 @app.route('/ML/Filter/Facets', methods=['POST'])
 def filter_document_by_facets():
     content = request.get_json()
@@ -99,6 +112,9 @@ def filter_document_by_facets():
     return jsonify(list(documents.keys()))
 
 
+'''
+This method returns all facet values from the list of facet name received
+'''
 @app.route('/ML/Facets', methods=['POST'])
 def get_facet_values():
     facets_name = request.get_json()
