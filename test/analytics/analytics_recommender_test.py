@@ -36,10 +36,10 @@ class TestIdentifyWordsInSearches(unittest.TestCase):
         ]
         search_importance = 0.9
         expected_result = {
-            "coveo search api dumb": 0.9,
+            "coveo search api dumb": 0.675,
             "coveo search api": 0.9,
-            "coveo search": (2/3)*0.9,
-            "coveo": (1/3)*0.9
+            "coveo search": 0.9,
+            "coveo": 0.45
         }
         self.assertEqual(
             get_searches_relatives_scores(searches_documents_mapping, context_entities, search_importance),
