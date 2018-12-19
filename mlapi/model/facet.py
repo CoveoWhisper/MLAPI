@@ -9,13 +9,13 @@ class Facet(JSONEncoder):
 
     def __eq__(self, other):
         if isinstance(other, Facet):
-            return self.name == other.name and self.value == self.value
-        return NotImplemented
+            return self.name == other.name and self.value == other.value
+        return False
 
     def __hash__(self):
         return hash(tuple(sorted(self.__dict__.items())))
 
-    def to_json(self):
+    def to_dict(self):
         return {"_type": Facet.__name__, "name": self.name, "value": self.value}
 
     @staticmethod

@@ -7,7 +7,7 @@ class Question(object):
         self.answer = answer
         self.status = status
 
-    def to_json(self):
+    def to_dict(self):
         return {"id": self.id,
                 "facetName": self.facet_name,
                 "facetValues": self.facet_values,
