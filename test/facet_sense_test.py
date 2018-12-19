@@ -1,4 +1,6 @@
 import unittest
+
+from definitions import Definitions
 from mlapi.facet_sense_analyzer import FacetSenseAnalyzer
 from mlapi.facet_sense_api import FacetSenseApi
 from unittest.mock import MagicMock
@@ -8,7 +10,7 @@ import json
 class TestFacetSense(unittest.TestCase):
 
     def test_conversion_to_facet_from_valid_json(self):
-        facet_sense_api = FacetSenseApi()
+        facet_sense_api = FacetSenseApi(Definitions.ROOT_DIR + "/test/test_files/appsettings.json")
         test_data = self.generate_valid_test_data()
         facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)
 
@@ -24,7 +26,7 @@ class TestFacetSense(unittest.TestCase):
         self.assertEqual(values[1].score, 47)
 
     def test_conversion_to_facet_from_valid_json_with_multiple_facets(self):
-        facet_sense_api = FacetSenseApi()
+        facet_sense_api = FacetSenseApi(Definitions.ROOT_DIR + "/test/test_files/appsettings.json")
         test_data = self.generate_valid_test_data_with_multiple_facets()
         facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)
 
@@ -42,7 +44,7 @@ class TestFacetSense(unittest.TestCase):
         self.assertEqual(second_facet.values[0].score, 47)
 
     def test_conversion_to_facet_from_empty_json(self):
-        facet_sense_api = FacetSenseApi()
+        facet_sense_api = FacetSenseApi(Definitions.ROOT_DIR + "/test/test_files/appsettings.json")
         facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)
 
         result = facet_sense_analyzer.content_to_facet_dtos(json.loads("{}"))
@@ -50,7 +52,7 @@ class TestFacetSense(unittest.TestCase):
         self.assertEqual(len(result), 0)
 
     def test_facet_sense_with_valid_json_returns_valid_dto(self):
-        facet_sense_api = FacetSenseApi()
+        facet_sense_api = FacetSenseApi(Definitions.ROOT_DIR + "/test/test_files/appsettings.json")
         test_data = self.generate_valid_test_data()
         facet_sense_api.get_facet_scores = MagicMock(return_value=test_data)
         facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)

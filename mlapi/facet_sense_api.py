@@ -7,10 +7,9 @@ import json
 
 class FacetSenseApi(object):
     QUERY = "{{\"q\": \"{text}\"}}"
-    CREDENTIALS_PATH = Path(Definitions.ROOT_DIR + "/appsettings.json")
 
-    def __init__(self):
-        with open(FacetSenseApi.CREDENTIALS_PATH, 'r') as file:
+    def __init__(self, credentials_path):
+        with open(credentials_path, 'r') as file:
             values = json.load(file)
             self.username = values['facetSenseUsername']
             self.password = values['facetSensePassword']

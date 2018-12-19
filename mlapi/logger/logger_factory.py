@@ -12,7 +12,8 @@ class LoggerFactory:
     @staticmethod
     def configure(logger_name):
         path = os.path.join(Definitions.ROOT_DIR, LoggerFactory.__configuration_file_path)
-        configuration_data = json.load(open(path))
+        with open(path) as file:
+            configuration_data = json.load(file)
         logger = logging.getLogger(logger_name)
         logger.setLevel(logging.getLevelName(configuration_data["level"]))
 

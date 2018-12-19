@@ -1,3 +1,4 @@
+import pickle
 import os
 
 from flask import Flask, request, jsonify
@@ -16,32 +17,38 @@ from mlapi.model.facet_values import FacetValues
 from mlapi.AI_recommenders.AI_document_recommender import DocumentRecommender
 from mlapi.analytics.analytics_recommender import AnalyticsRecommender
 
-import pickle
-
-FACETS_FILE = Path(Definitions.ROOT_DIR + "/facets.bin")
+FACETS_PATH = Path(Definitions.ROOT_DIR + "/facets.bin")
+CREDENTIALS_PATH = Path(Definitions.ROOT_DIR + "/appsettings.json")
 
 app = Flask(__name__)
 app.json_encoder = ObjectEncoder
-loader = FacetLoader()
-facetDict = FacetDictionary()
-facets_by_document = loader.load_facets(FACETS_FILE)
-facets_dict_by_document = dict()
-for document in facets_by_document:
-    facet_dict = dict()
-    for facet in facets_by_document[document]:
-        if facet.name in facet_dict:
-            facet_dict[facet.name].append(facet.value)
-        else:
-            facet_dict[facet.name] = [facet.value]
 
-    facets_dict_by_document[document] = facet_dict
 
-facets = facetDict.create_facet_dict(facets_by_document)
+def initialize(facets_file, credentials_path):
+    loader = FacetLoader()
+    facet_dict = FacetDictionary()
+    global facets_by_document
+    facets_by_document = loader.load_facets(facets_file)
+    global facets_dict_by_document
+    facets_dict_by_document = dict()
+    for document in facets_by_document:
+        facet_dict = dict()
+        for facet in facets_by_document[document]:
+            if facet.name in facet_dict:
+                facet_dict[facet.name].append(facet.value)
+            else:
+                facet_dict[facet.name] = [facet.value]
+        facets_dict_by_document[document] = facet_dict
+    global facets
+    facets = facet_dict.create_facet_dict(facets_by_document)
 
-facet_sense_api = FacetSenseApi()
-facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)
+    facet_sense_api = FacetSenseApi(credentials_path)
+    global facet_sense_analyzer
+    facet_sense_analyzer = FacetSenseAnalyzer(facet_sense_api)
 
-analytics_recommender = AnalyticsRecommender()
+    global analytics_recommender
+    analytics_recommender = AnalyticsRecommender()
+
 
 tf_idf_vectorizer_file_path = 'mlapi/AI_models/tf_idf_vectorizer.bin'
 if os.path.isfile(tf_idf_vectorizer_file_path):
@@ -130,8 +137,7 @@ def get_facet_values():
     return jsonify(facet_values)
 
 
-
-
 if __name__ == '__main__':
+    initialize(FACETS_PATH, CREDENTIALS_PATH)
     LoggerFactory.get_logger(__name__).info("API started")
     app.run(host='0.0.0.0')
